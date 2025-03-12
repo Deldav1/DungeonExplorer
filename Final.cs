@@ -24,16 +24,16 @@ namespace DungeonExplorer
         public Player(string name, int health, bool isTesting = false)
         {
             Name = string.IsNullOrEmpty(name) ? throw new ArgumentException("Name cannot be empty", nameof(name)) : name;
-            Health = health is < 0 or > GameConstants.MaxHealth 
-                ? throw new ArgumentException($"Health must be between 0 and {GameConstants.MaxHealth}") 
+            Health = health is < 0 or > GameConstants.MaxHealth
+                ? throw new ArgumentException($"Health must be between 0 and {GameConstants.MaxHealth}")
                 : health;
             _suppressMessages = isTesting;
         }
 
-        // Returns true if player's health is 0 or below
+        // Returns true if players health is 0 or below
         public bool IsDead => Health <= 0;
 
-        /// Adds an item to the players inventory if they don't already have one
+        /// Adds an item to the player's inventory if they don't already have one
         public void PickUpItem(string newItem)
         {
             if (string.IsNullOrEmpty(newItem))
@@ -53,7 +53,7 @@ namespace DungeonExplorer
             var droppedItem = Item;
             if (droppedItem != GameConstants.None && !_suppressMessages)
                 Console.WriteLine($"{Name} has dropped the {droppedItem}.");
-            
+
             Item = GameConstants.None;
             return droppedItem;
         }
@@ -64,7 +64,7 @@ namespace DungeonExplorer
             if (damage <= 0) return IsDead;
 
             Health = Math.Max(0, Health - damage);
-            
+
             if (!_suppressMessages)
             {
                 Console.WriteLine($"{Name} took {damage} damage. Health is now {Health}.");
@@ -96,17 +96,17 @@ namespace DungeonExplorer
         public string GetDescription()
         {
             HasBeenInspected = true;
-            return Item == GameConstants.None 
-                ? Description 
+            return Item == GameConstants.None
+                ? Description
                 : $"{Description}\nYou seem to have found a {Item} here.";
         }
 
         /// Returns the initial description shown when entering a room
-        public string GetInitialDescription() => 
+        public string GetInitialDescription() =>
             "You find yourself in a dimly lit, ruined room, its walls overgrown with vines.";
 
         /// Places a new item in the room
-        public void SetItem(string newItem) => 
+        public void SetItem(string newItem) =>
             Item = string.IsNullOrEmpty(newItem) ? throw new ArgumentException("Item cannot be empty", nameof(newItem)) : newItem;
 
         /// Removes the current item from the room
@@ -129,7 +129,9 @@ namespace DungeonExplorer
             // Initialize game with a single starting room (more rooms can be added)
             _rooms = new List<Room>
             {
-                new("Starting Room", "A dimly lit dungeon room. There appears to be an weathered sword on the floor.", "Ancient Sword")
+                new("Starting Room", "A dimly lit dungeon room. There appears to be an weathered sword on the floor.", "Ancient Sword"),
+                new("Dark Chamber", "A pitch-black chamber with cold stone walls. In the corner, you notice something leaning against the wall.", "Ruined Bow"),
+                new("Mysterious Alcove", "A mysterious alcove covered in ancient runes. Something metallic gleams in the faint light.", "Sacred Shield")
             };
             _currentRoom = _rooms[0];
             _exploredRooms = new List<string>();
@@ -161,7 +163,7 @@ namespace DungeonExplorer
             Console.WriteLine($"Health: {_player.Health}/{GameConstants.MaxHealth}");
             Console.WriteLine($"Final Item: {_player.Item}");
             Console.WriteLine($"Rooms Explored: {_exploredRooms.Count}/{_rooms.Count}");
-            
+
             if (_exploredRooms.Count > 0)
             {
                 Console.WriteLine("\nRooms you discovered:");
@@ -180,8 +182,9 @@ namespace DungeonExplorer
             Console.WriteLine("3. Pick Up Item");
             Console.WriteLine("4. Drop Current Item");
             Console.WriteLine("5. Simulate Taking Damage");
-            Console.WriteLine("6. Exit Game");
-            Console.Write("Enter your choice (1-6): ");
+            Console.WriteLine("6. Move to Another Room");
+            Console.WriteLine("7. Exit Game");
+            Console.Write("Enter your choice (1-7): ");
         }
 
         // Processes the player's menu selection
@@ -197,7 +200,8 @@ namespace DungeonExplorer
                 case "3": AttemptPickupItem(); break;
                 case "4": AttemptDropItem(); break;
                 case "5": SimulateDamage(); break;
-                case "6":
+                case "6": AttemptRoomChange(); break;
+                case "7":
                     _isRunning = false;
                     Console.WriteLine("Thanks for playing!");
                     break;
@@ -283,6 +287,33 @@ namespace DungeonExplorer
             else
             {
                 Console.WriteLine("Invalid damage amount.");
+            }
+        }
+
+        // Handles the logic for changing rooms
+        private void AttemptRoomChange()
+        {
+            Console.WriteLine("\nAvailable Rooms:");
+            for (int i = 0; i < _rooms.Count; i++)
+            {
+                Console.WriteLine($"{i + 1}. {_rooms[i].Name}");
+            }
+
+            Console.Write($"\nEnter room number (1-{_rooms.Count}): ");
+            if (int.TryParse(Console.ReadLine(), out var roomChoice) &&
+                roomChoice >= 1 && roomChoice <= _rooms.Count)
+            {
+                var newRoom = _rooms[roomChoice - 1];
+                if (newRoom == _currentRoom)
+                {
+                    Console.WriteLine("You are already in this room!");
+                    return;
+                }
+                ChangeRoom(newRoom);
+            }
+            else
+            {
+                Console.WriteLine("Invalid room choice.");
             }
         }
 
