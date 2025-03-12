@@ -33,7 +33,7 @@ namespace DungeonExplorer
         // Returns true if player's health is 0 or below
         public bool IsDead => Health <= 0;
 
-        /// Adds an item to the player's inventory if they don't already have one
+        /// Adds an item to the players inventory if they don't already have one
         public void PickUpItem(string newItem)
         {
             if (string.IsNullOrEmpty(newItem))
