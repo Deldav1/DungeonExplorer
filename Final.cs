@@ -58,7 +58,7 @@ namespace DungeonExplorer
             return droppedItem;
         }
 
-        /// Applies damage to the player and checks if they died
+        /// Applies damage to the player and checks if they have died
         public bool TakeDamage(int damage)
         {
             if (damage <= 0) return IsDead;
