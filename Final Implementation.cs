@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Xunit;
 
 namespace DungeonExplorer
 {
@@ -689,6 +690,163 @@ namespace DungeonExplorer
             var playerName = string.IsNullOrWhiteSpace(input) ? "Hero" : input;
             var game = new Game(playerName);
             game.Start();
+        }
+    }
+
+    // Test class for unit testing
+    public class DungeonExplorerTests
+    {
+        [Fact]
+        public void Player_Initialization_ShouldSetCorrectValues()
+        {
+            // Arrange & Act
+            var player = new Player("TestHero", GameConstants.MaxHealth, true);
+
+            // Assert
+            Assert.Equal("TestHero", player.Name);
+            Assert.Equal(GameConstants.MaxHealth, player.Health);
+            Assert.NotNull(player.Inventory);
+            Assert.False(player.IsDead);
+        }
+
+        [Fact]
+        public void Player_TakeDamage_ShouldReduceHealth()
+        {
+            // Arrange
+            var player = new Player("TestHero", GameConstants.MaxHealth, true);
+            int damage = 20;
+
+            // Act
+            player.TakeDamage(damage);
+
+            // Assert
+            Assert.Equal(GameConstants.MaxHealth - damage, player.Health);
+        }
+
+        [Fact]
+        public void Player_TakeDamage_ShouldNotGoBelowZero()
+        {
+            // Arrange
+            var player = new Player("TestHero", 10, true);
+            int damage = 20;
+
+            // Act
+            player.TakeDamage(damage);
+
+            // Assert
+            Assert.Equal(0, player.Health);
+            Assert.True(player.IsDead);
+        }
+
+        [Fact]
+        public void Inventory_AddItem_ShouldSucceedWhenNotFull()
+        {
+            // Arrange
+            var inventory = new Inventory();
+            var item = new Weapon("TestSword", 5);
+
+            // Act
+            bool result = inventory.AddItem(item);
+
+            // Assert
+            Assert.True(result);
+            Assert.Single(inventory.Items);
+            Assert.Equal(item, inventory.Items[0]);
+        }
+
+        [Fact]
+        public void Inventory_AddItem_ShouldFailWhenFull()
+        {
+            // Arrange
+            var inventory = new Inventory();
+            for (int i = 0; i < GameConstants.MaxInventorySize; i++)
+            {
+                inventory.AddItem(new Weapon($"Sword{i}", i));
+            }
+            var newItem = new Weapon("ExtraSword", 5);
+
+            // Act
+            bool result = inventory.AddItem(newItem);
+
+            // Assert
+            Assert.False(result);
+            Assert.Equal(GameConstants.MaxInventorySize, inventory.Items.Count);
+        }
+
+        [Fact]
+        public void Monster_Attack_ShouldDamagePlayer()
+        {
+            // Arrange
+            var player = new Player("TestHero", GameConstants.MaxHealth, true);
+            var monster = new Monster("TestMonster", 50, 10);
+
+            // Act
+            monster.Attack(player);
+
+            // Assert
+            Assert.Equal(GameConstants.MaxHealth - monster.Damage, player.Health);
+        }
+
+        [Fact]
+        public void Room_GetDescription_ShouldIncludeMonsters()
+        {
+            // Arrange
+            var room = new Room("TestRoom", "A test room", new Weapon("TestSword", 5));
+            var monster = new Monster("TestMonster", 50, 10);
+            room.SpawnMonster(monster);
+
+            // Act
+            string description = room.GetDescription();
+
+            // Assert
+            Assert.Contains("monster", description.ToLower());
+        }
+
+        [Fact]
+        public void GameMap_ConnectRooms_ShouldCreateBidirectionalConnection()
+        {
+            // Arrange
+            var map = new GameMap();
+            var room1 = new Room("Room1", "First room", new Weapon("Sword1", 5));
+            var room2 = new Room("Room2", "Second room", new Weapon("Sword2", 5));
+
+            // Act
+            map.ConnectRooms(room1, room2);
+
+            // Assert
+            var connectedFromRoom1 = map.GetConnectedRooms(room1);
+            var connectedFromRoom2 = map.GetConnectedRooms(room2);
+            Assert.Contains(room2, connectedFromRoom1);
+            Assert.Contains(room1, connectedFromRoom2);
+        }
+
+        [Fact]
+        public void Potion_Use_ShouldRestoreHealth()
+        {
+            // Arrange
+            var player = new Player("TestHero", 50, true);
+            var potion = new Potion("Health", 30);
+
+            // Act
+            potion.Use(player);
+
+            // Assert
+            Assert.Equal(80, player.Health);
+        }
+
+        [Fact]
+        public void Weapon_Use_ShouldNotConsumeItem()
+        {
+            // Arrange
+            var player = new Player("TestHero", GameConstants.MaxHealth, true);
+            var weapon = new Weapon("TestSword", 5);
+            player.Inventory.AddItem(weapon);
+
+            // Act
+            weapon.Use(player);
+
+            // Assert
+            Assert.Contains(weapon, player.Inventory.Items);
         }
     }
 }
