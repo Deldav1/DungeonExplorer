@@ -5,16 +5,14 @@ using System.Linq;
 
 namespace DungeonExplorer
 {
-    /// <summary>
+    
     /// Stores game-wide constant values used throughout the application
-    /// </summary>
     public static class GameConstants
     {
         public const int MaxHealth = 100;
         public const string None = "None";
         public const bool DebugMode = false;
 
-        // New constants
         public const int MaxInventorySize = 5;
         public static readonly string[] PotionTypes = { "Health", "Strength", "Invisibility" };
         public static readonly string[] WeaponTypes = { "Sword", "Axe", "Bow", "Dagger" };
@@ -22,9 +20,7 @@ namespace DungeonExplorer
         public const int BasePlayerDamage = 3; // Bare hands damage
     }
 
-    /// <summary>
-    /// Represents a monster in the game with health and combat capabilities
-    /// </summary>
+    /// Represents a monster in the game with health and combat abilities
     public class Monster
     {
         public string Name { get; }
@@ -61,9 +57,7 @@ namespace DungeonExplorer
         }
     }
 
-    /// <summary>
     /// Base class for all items in the game
-    /// </summary>
     public abstract class Item
     {
         public string Name { get; }
@@ -78,9 +72,7 @@ namespace DungeonExplorer
         public abstract void Use(Player player);
     }
 
-    /// <summary>
     /// Represents a weapon that can be equipped
-    /// </summary>
     public class Weapon : Item
     {
         public int DamageBonus { get; }
@@ -97,9 +89,7 @@ namespace DungeonExplorer
         }
     }
 
-    /// <summary>
     /// Represents a consumable potion
-    /// </summary>
     public class Potion : Item
     {
         public int EffectValue { get; }
@@ -127,9 +117,7 @@ namespace DungeonExplorer
         }
     }
 
-    /// <summary>
     /// Manages the player's collection of items
-    /// </summary>
     public class Inventory
     {
         private readonly List<Item> _items = new();
@@ -171,9 +159,7 @@ namespace DungeonExplorer
         }
     }
 
-    /// <summary>
-    /// Represents an enemy in the game (legacy, replaced by Monster)
-    /// </summary>
+    /// Represents an enemy in the game 
     public class Enemy
     {
         public string Name { get; }
@@ -187,9 +173,7 @@ namespace DungeonExplorer
         public void Defeat() => IsDefeated = true;
     }
 
-    /// <summary>
-    /// Represents a player in the game with health, inventory, and combat capabilities
-    /// </summary>
+    /// Represents a player in the game with health, inventory, and combat abilities
     public class Player
     {
         public string Name { get; }
@@ -229,9 +213,7 @@ namespace DungeonExplorer
         }
     }
 
-    /// <summary>
     /// Manages room connections and navigation
-    /// </summary>
     public class GameMap
     {
         private readonly Dictionary<Room, List<Room>> _connections = new();
@@ -270,9 +252,7 @@ namespace DungeonExplorer
         }
     }
 
-    /// <summary>
     /// Represents a room in the dungeon that can contain items and monsters
-    /// </summary>
     public class Room
     {
         public string Name { get; }
@@ -323,9 +303,7 @@ namespace DungeonExplorer
         public void ClearItem() => RoomItem = default!;
     }
 
-    /// <summary>
     /// Main game class that manages game state and player interactions
-    /// </summary>
     public class Game
     {
         private readonly Player _player;
@@ -361,7 +339,7 @@ namespace DungeonExplorer
                 new("Throne Room", "A massive hall with a dark throne at its center.", weapons[4])
             };
 
-            // Set up map connections (linear progression)
+            // Set up map connections with linear progression
             _map.AddRoom(rooms[0], true);
             for (int i = 1; i < rooms.Count; i++)
             {
@@ -461,9 +439,10 @@ namespace DungeonExplorer
                 Console.WriteLine("\nYou have been defeated...");
             }
         }
-
+        // Handles the monsters in the current room
         private void HandleMonsters()
         {
+            // Check if there are any monsters in the room
             var aliveMonsters = _currentRoom.Monsters.Where(m => m.IsAlive).ToList();
             if (!aliveMonsters.Any()) return;
 
@@ -474,7 +453,7 @@ namespace DungeonExplorer
                 if (_player.IsDead) break;
             }
         }
-
+        // Changes the current room and updates the game state
         private void ChangeRoom(Room newRoom)
         {
             _currentRoom = newRoom;
@@ -487,7 +466,7 @@ namespace DungeonExplorer
 
             HandleMonsters();
         }
-
+        // Starts the game loop and handles player input
         public void Start()
         {
             Console.WriteLine("=== DUNGEON EXPLORER ===");
@@ -510,6 +489,7 @@ namespace DungeonExplorer
             }
         }
 
+        // Displays game over stats and summary
         private void ShowGameOverStats()
         {
             Console.WriteLine("\n=== GAME OVER ===");
@@ -527,6 +507,7 @@ namespace DungeonExplorer
             }
         }
 
+        // Displays the menu of available actions
         private void ShowMenu()
         {
             Console.WriteLine($"\n=== {_currentRoom.Name.ToUpper()} ===");
@@ -542,6 +523,7 @@ namespace DungeonExplorer
             Console.Write("\nWhat will you do? ");
         }
 
+        // Processes the player's choice and executes the corresponding action
         private void ProcessChoice()
         {
             var choice = Console.ReadLine();
@@ -561,6 +543,7 @@ namespace DungeonExplorer
             }
         }
 
+        // Displays the player's current stats
         private void ShowPlayerStats()
         {
             Console.WriteLine($"PLAYER: {_player.Name}");
@@ -572,12 +555,13 @@ namespace DungeonExplorer
 
             Console.WriteLine($"Potions: {_player.Inventory.Items.OfType<Potion>().Count()}");
         }
-
+        // Inspects the current room and displays its description
         private void InspectRoom()
         {
             Console.WriteLine(_currentRoom.GetDescription());
         }
 
+        // Picks up an item from the current room and adds it to the player's inventory
         private void PickUpItem()
         {
             if (_currentRoom.RoomItem == null)
@@ -600,6 +584,7 @@ namespace DungeonExplorer
             }
         }
 
+        // Drops an item from the player's inventory into the current room
         private void DropItem()
         {
             if (_player.Inventory.Items.Count == 0)
@@ -614,6 +599,7 @@ namespace DungeonExplorer
                 return;
             }
 
+            // Display inventory and prompt for item to drop
             Console.WriteLine("Select item to drop:");
             _player.Inventory.Display();
             Console.Write("Item number: ");
@@ -632,6 +618,7 @@ namespace DungeonExplorer
             }
         }
 
+        // Uses an item from the player's inventory
         private void UseInventoryItem()
         {
             if (_player.Inventory.Items.Count == 0)
@@ -661,6 +648,7 @@ namespace DungeonExplorer
             }
         }
 
+        // Moves the player to a connected room
         private void MoveToRoom()
         {
             var connectedRooms = _map.GetConnectedRooms(_currentRoom).ToList();
@@ -689,6 +677,7 @@ namespace DungeonExplorer
         }
     }
 
+    // Entry point
     public static class Program
     {
         public static void Main(string[] args)
